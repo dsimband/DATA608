@@ -36,9 +36,9 @@ test()
 
 
 # setup vignette
-usethis::use_vignette("DATA621")
+usethis::use_vignette("DATA608")
 devtools::install()
-devtools::build_rmd("vignettes/DATA621.Rmd")
+devtools::build_rmd("vignettes/DATA608.Rmd")
 devtools::build()
 
 
