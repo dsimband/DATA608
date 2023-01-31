@@ -1,0 +1,227 @@
+---
+title: "DATA608_module1_Exploratory Data Analysis"
+author: "David Simbandumwe"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+editor_options: 
+  chunk_output_type: inline
+---
+
+**Principles of Data Visualization and Introduction to ggplot2**
+
+I have provided you with data about the 5,000 fastest growing companies in the US, as compiled by Inc. magazine. lets read this in:
+
+```{r}
+
+inc <- read.csv("https://raw.githubusercontent.com/charleyferrari/CUNY_DATA_608/master/module1/Data/inc5000_data.csv", header= TRUE)
+
+```
+
+And lets preview this data:
+
+```{r}
+
+head(inc)
+
+```
+
+
+
+```{r}
+
+summary(inc)
+
+```
+
+Think a bit on what these summaries mean. Use the space below to add some more relevant non-visual exploratory information you think helps you understand this data:
+
+<b><i>The stat.desc() function computes additional descriptive statistics about the series in a data frame.  The function provides metrics on the number of na / null records and includes statistical measures such as std.dev, var etc.  </i></b>
+
+```{r}
+library(pastecs)
+library(dplyr)
+#by(inc, inc$State, summary)
+
+
+#stat.desc(inc_num)
+
+#round(stat.desc(inc_num),4)
+
+#stat_df <- stat.desc(Filter(is.numeric, inc), norm=TRUE, p=0.95)
+stat_df <- stat.desc(Filter(is.numeric, inc))
+stat_df <- format(stat_df, scientific = F, digits = 2, drop0trailing = TRUE)
+stat_df
+
+```
+
+
+<b><i>
+The ad.test() function tests for normal distribution for each variable in the dataset. With the resulting p-value of less than 0.05 we reject the null hypothesis for all variables. The variables are not normally distributed at a confidence level 0.95.  
+</i></b>
+
+```{r}
+
+library(nortest)
+ad_t <- ad.test(inc$Growth_Rate)
+print(paste0(ad_t$method , ' variable ' , ad_t$data.name, ' normal distributed ', ad_t$p.value > 0.05 ))
+
+ad_t <- ad.test(inc$Revenue)
+print(paste0(ad_t$method , ' variable ' , ad_t$data.name, ' normal distributed ', ad_t$p.value > 0.05 ))
+
+ad_t <- ad.test(inc$Employees)
+print(paste0(ad_t$method , ' variable ' , ad_t$data.name, ' normal distributed ', ad_t$p.value > 0.05 ))
+
+
+```
+
+
+<b><i>
+The rcorr() function creates a correlation matrix for numeric variables. It highlights the relationship between variable pairs in the dataset 
+</i></b>
+
+
+```{r}
+library(Hmisc)
+
+inc_num <- inc %>% dplyr::select(where(is.numeric))
+rcorr(as.matrix(inc_num))
+
+```
+
+<b><i>
+And finaly the average for variables for Revenue and Employees was computed using summarise in the dplyr package.
+</i></b>
+
+```{r}
+
+inc %>% group_by(State) %>%
+	select(City, State, Revenue, Employees) %>%
+	summarise(avg_rev=mean(Revenue),avg_emp=mean(Employees)) %>% 
+	arrange(desc(avg_rev))
+
+inc %>% group_by(State) %>%
+	select(City, State, Revenue, Employees) %>%
+	summarise(avg_rev=mean(Revenue),avg_emp=mean(Employees)) %>% 
+	arrange(desc(avg_emp))
+
+
+
+```
+
+
+
+
+## Question 1
+
+Create a graph that shows the distribution of companies in the dataset by State (ie how many are in each state). There are a lot of States, so consider which axis you should use. This visualization is ultimately going to be consumed on a 'portrait' oriented screen (ie taller than wide), which should further guide your layout choices.
+
+```{r}
+
+inc %>% group_by(State) %>% summarise(num = n()) %>%
+	ggplot(aes(x=reorder(State,num), y=num, fill=State)) +
+	coord_flip() + 
+	theme_light() +
+    geom_bar(stat = 'identity', width=0.3 , show.legend = FALSE) +
+	labs(
+	    x = 'US State', 
+	    y = 'Number of Companies', 
+	    title = 'Distribution of Companies (by State)'
+	)
+
+
+```
+
+## Quesiton 2
+
+Lets dig in on the state with the 3rd most companies in the data set. Imagine you work for the state and are interested in how many people are employed by companies in different industries. Create a plot that shows the average and/or median employment by industry for companies in this state (only use cases with full data, use R's `complete.cases()` function.) In addition to this, your graph should show how variable the ranges are, and you should deal with outliers.
+
+
+
+
+```{r}
+
+st3 <- inc %>% group_by(State) %>% summarise(num = n()) %>%
+				arrange(desc(num))
+
+state_st <- st3$State[3]
+
+
+ny_df <- inc[complete.cases(inc), ] %>% dplyr::filter(State == state_st) %>% 
+		group_by(Industry) %>% summarise(num = n()) %>%
+		arrange(desc(num))
+	
+ny_df %>% ggplot(aes(x=reorder(Industry,num), y=num, fill=Industry)) +
+	coord_flip() +
+    geom_bar(stat = 'identity', width=0.3 , show.legend = FALSE) +
+	theme_light() +
+	labs(
+	    x = 'Industry', 
+	    y = 'Number of Employees', 
+	    title = 'NY Distribution of Employees (by Industry)'
+	)
+	
+```
+
+
+<b><i>
+And finaly the average for variables for Revenue and Employees was computed using summarise in the dplyr package.
+</i></b>
+
+
+
+```{r}
+
+st3 <- inc %>% group_by(State) %>% summarise(num = n()) %>%
+				arrange(desc(num))
+
+state_st <- st3$State[3]
+print(paste0('State: ', state_st))
+print(paste0('Original Record Count: ', st3$num[3]))
+ny_df <- inc  %>% filter(State == state_st, complete.cases(.)) %>% arrange(Industry) %>% select(Name,Industry, Employees) 
+print(paste0('Filter Complete Record: ', nrow(ny_df)))
+ny_df <- ny_df %>% group_by(Industry) %>% filter(!(abs(Employees - median(Employees)) > 1.5*IQR(Employees)))
+print(paste0('Filter Outliers: ', nrow(ny_df)))
+
+
+ny_df %>% ggplot(aes(x=Industry, y=Employees, fill=Industry)) +
+	coord_flip() +
+    geom_boxplot(show.legend = FALSE) +
+	theme_light() +
+	labs(
+	    x = 'Industry', 
+	    y = 'Number of Employees', 
+	    title = 'NY Distribution of Employees (by Industry)'
+	)
+
+
+```
+
+
+
+
+
+## Question 3
+
+Now imagine you work for an investor and want to see which industries generate the most revenue per employee. Create a chart that makes this information clear. Once again, the distribution per industry should be shown.
+
+```{r}
+
+ny_rev_df <- inc[complete.cases(inc), ] %>% dplyr::filter(State == state_st) %>% 
+		group_by(Industry) %>% summarise(avg_rev = sum(Revenue)/sum(Employees)) %>%
+		arrange(desc(avg_rev))
+	
+ny_rev_df %>% ggplot(aes(x=avg_rev, y=Industry, fill=Industry)) +
+    geom_bar(stat = 'identity', width=0.3 , show.legend = FALSE) 
+
+
+
+
+
+```
+
+
+
+
+
