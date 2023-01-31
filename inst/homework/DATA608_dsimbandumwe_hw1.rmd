@@ -165,7 +165,7 @@ The state with the 3rd most companies is NY. The boxplot depicts the variable ra
 
 
 
-```{r, fig.height=6}
+```{r}
 
 st3 <- inc %>% group_by(State) %>% summarise(num = n()) %>%
 				arrange(desc(num))
@@ -179,21 +179,12 @@ ny_df <- ny_df %>% group_by(Industry) %>% filter(!(abs(Employees - median(Employ
 print(paste0('Filter Outliers: ', nrow(ny_df)))
 
 
-ny_df %>% ggplot(aes(x=reorder(Industry,Employees), y=Employees, fill=Industry)) +
-	coord_flip() +
-    geom_boxplot(show.legend = FALSE) +
-	labs(
-	    x = 'Industry', 
-	    y = 'Number of Employees', 
-	    title = 'NY Distribution of Employees (by Industry)'
-	)
-
 
 ny_df %>% ggplot(aes(x=reorder(Industry,Employees), y=Employees)) +
 	coord_flip() +
     geom_boxplot(show.legend = FALSE) +
-	stat_summary(fun.y="mean", size=3, geom = "point", aes(color="Mean"))+
-	stat_summary(fun.y="median", size=3, geom = "point", aes(color="Median"))+
+	stat_summary(fun.y="mean", size=1, geom = "point", aes(color="Mean"))+
+	stat_summary(fun.y="median", size=1, geom = "point", aes(color="Median"))+
 	labs(
 	    x = 'Industry', 
 	    y = 'Number of Employees', 
@@ -213,9 +204,9 @@ Now imagine you work for an investor and want to see which industries generate t
 
 
 
-```{r, fig.height=10}
+```{r}
 
-library(RColorBrewer)
+#library(RColorBrewer)
 
 ny_rev_df <- inc %>% mutate(rev_per_empl = Revenue/Employees)
 
@@ -227,22 +218,12 @@ ny_rev_df <- ny_rev_df %>% group_by(Industry) %>% filter(!(abs(rev_per_empl - me
 print(paste0('Filter Outliers: ', nrow(ny_rev_df)))
 
 
-ny_rev_df %>% ggplot(aes(x=reorder(Industry,rev_per_empl), y=rev_per_empl, fill=Industry)) +
-	coord_flip() +
-    geom_boxplot(show.legend = FALSE) +
-	scale_y_continuous(labels = scales::comma) +
-	labs(
-	    x = 'Industry', 
-	    y = 'Revenue per Employees', 
-	    title = 'Distribution of Employees (by Industry)'
-	)
-
 
 ny_rev_df %>% ggplot(aes(x=reorder(Industry,rev_per_empl), y=rev_per_empl)) +
 	coord_flip() +
     geom_boxplot(show.legend = FALSE) +
-	stat_summary(fun.y="mean", size=3, geom = "point", aes(color="Mean"))+
-	stat_summary(fun.y="median", size=3, geom = "point", aes(color="Median"))+
+	stat_summary(fun.y="mean", size=1, geom = "point", aes(color="Mean"))+
+	stat_summary(fun.y="median", size=1, geom = "point", aes(color="Median"))+
 	scale_y_continuous(labels = scales::comma) +
 	labs(
 	    x = 'Industry', 
