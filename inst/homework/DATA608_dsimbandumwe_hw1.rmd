@@ -183,8 +183,8 @@ print(paste0('Filter Outliers: ', nrow(ny_df)))
 ny_df %>% ggplot(aes(x=reorder(Industry,Employees), y=Employees)) +
 	coord_flip() +
     geom_boxplot(show.legend = FALSE, outlier.colour = NA) +
-	stat_summary(fun.y="mean", size=1, geom = "point", aes(color="Mean"))+
-	stat_summary(fun.y="median", size=1, geom = "point", aes(color="Median"))+
+	stat_summary(fun="mean", size=2, geom = "point", aes(color="Mean"))+
+	stat_summary(fun="median", size=2, geom = "point", aes(color="Median"))+
 	labs(
 	    x = 'Industry', 
 	    y = 'Number of Employees', 
@@ -222,8 +222,8 @@ print(paste0('Filter Outliers: ', nrow(rev_df)))
 rev_df %>% ggplot(aes(x=reorder(Industry,rev_per_empl), y=rev_per_empl)) +
 	coord_flip() +
     geom_boxplot(show.legend = FALSE, outlier.colour = NA) +
-	stat_summary(fun.y="mean", size=1, geom = "point", aes(color="Mean"))+
-	stat_summary(fun.y="median", size=1, geom = "point", aes(color="Median"))+
+	stat_summary(fun="mean", size=2, geom = "point", aes(color="Mean"))+
+	stat_summary(fun="median", size=2, geom = "point", aes(color="Median"))+
 	scale_y_continuous(labels = scales::comma) +
 	labs(
 	    x = 'Industry', 
