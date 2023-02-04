@@ -49,7 +49,7 @@ summary(inc)
 Think a bit on what these summaries mean. Use the space below to add some more relevant non-visual exploratory information you think helps you understand this data:
 
 <b><i>
-The skim() function outlines the structure of the dataset and key stats for the numeric and char variables
+The skim() function outlines the structure of the dataset and key stats for the numeric and char variables. This is an interesting function because it deals with numeric and categorical data automatically. 
 </i></b>
 
 ```{r}
@@ -160,7 +160,7 @@ Lets dig in on the state with the 3rd most companies in the data set. Imagine yo
 
 
 <b><i>
-The state with the 3rd most companies is NY. The boxplot depicts the variable ranges for the data and captures the median value of the number of Employees.
+The state with the 3rd most companies is NY. The boxplot depicts the distribution of employees from each industry. The variable ranges for the data and captures the median and mean value of the number of Employees.
 </i></b>
 
 
@@ -202,24 +202,24 @@ ny_df %>% ggplot(aes(x=reorder(Industry,Employees), y=Employees)) +
 
 Now imagine you work for an investor and want to see which industries generate the most revenue per employee. Create a chart that makes this information clear. Once again, the distribution per industry should be shown.
 
-
+<b><i>
+The first step is to add the revenue per employee for each firm into the dataset. The distribution for each industry is depicted as box plot to highlight the population distribution. The graph includes the medium and the mean. 
+</i></b>
 
 ```{r}
 
-#library(RColorBrewer)
-
-ny_rev_df <- inc %>% mutate(rev_per_empl = Revenue/Employees)
+rev_df <- inc %>% mutate(rev_per_empl = Revenue/Employees)
 
 
-print(paste0('Original Record Count: ', nrow(ny_rev_df)))
-ny_rev_df <- ny_rev_df  %>% filter(complete.cases(.)) %>% arrange(Industry) %>% select(Name, Industry, rev_per_empl, Revenue, Employees) 
-print(paste0('Filter Complete Record: ', nrow(ny_rev_df)))
-ny_rev_df <- ny_rev_df %>% group_by(Industry) %>% filter(!(abs(rev_per_empl - median(rev_per_empl)) > 1.5*IQR(rev_per_empl)))
-print(paste0('Filter Outliers: ', nrow(ny_rev_df)))
+print(paste0('Original Record Count: ', nrow(rev_df)))
+rev_df <- rev_df  %>% filter(complete.cases(.)) %>% arrange(Industry) %>% select(Name, Industry, rev_per_empl, Revenue, Employees) 
+print(paste0('Filter Complete Record: ', nrow(rev_df)))
+rev_df <- rev_df %>% group_by(Industry) %>% filter(!(abs(rev_per_empl - median(rev_per_empl)) > 1.5*IQR(rev_per_empl)))
+print(paste0('Filter Outliers: ', nrow(rev_df)))
 
 
 
-ny_rev_df %>% ggplot(aes(x=reorder(Industry,rev_per_empl), y=rev_per_empl)) +
+rev_df %>% ggplot(aes(x=reorder(Industry,rev_per_empl), y=rev_per_empl)) +
 	coord_flip() +
     geom_boxplot(show.legend = FALSE, outlier.colour = NA) +
 	stat_summary(fun.y="mean", size=1, geom = "point", aes(color="Mean"))+
@@ -228,7 +228,7 @@ ny_rev_df %>% ggplot(aes(x=reorder(Industry,rev_per_empl), y=rev_per_empl)) +
 	labs(
 	    x = 'Industry', 
 	    y = 'Revenue per Employees', 
-	    title = 'Distribution of Employees (by Industry)'
+	    title = 'Distribution of Revenue Per Employee (by Industry)'
 	)
 
 
